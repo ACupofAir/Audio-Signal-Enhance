@@ -137,6 +137,12 @@ class InferenceInterface(QWidget):
         self.model = torch.load(checkpoint)
         self.model.to(self.device)
         self.model.eval()
+        # Warmup the model with a dummy input to ensure everything is loaded correctly
+        dummy_input = torch.randn(1, 1, 16000).to(
+            self.device
+        )  # Assuming the model expects 1-second audio with 16kHz sampling rate
+        with torch.no_grad():
+            self.model.separate(dummy_input)
 
         QMessageBox.information(self, "提示", "模型加载成功")
 
@@ -185,7 +191,7 @@ class InferenceInterface(QWidget):
         # show si-snr
         self.result_sisnr_widget.setText(f"{-1* loss.item():.2f} dB")
         # show time cost
-        self.result_time_widget.setText(f"{delta_time*1000:.2f} s")
+        self.result_time_widget.setText(f"{delta_time*1000:.2f} ms")
         # show output path
         self.res_output_path_widget.setText(audio_output_path)
         QMessageBox.information(self, "提示", "降噪完毕！")
