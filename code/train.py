@@ -16,11 +16,27 @@ import pytorch_lightning as pl
 # We train the same model architecture that we used for inference above.
 from asteroid.models import DPRNNTasNet
 import asteroid.models.dptnet
+
 # In this example we use Permutation Invariant Training (PIT) and the SI-SDR loss.
 from asteroid.losses import pairwise_neg_sisdr, PITLossWrapper
+from datetime import datetime
 
 # Check if a GPU is available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# Configuration parameters
+config = {
+    "task": "enh_single",
+    "batch_size": 2,
+    "sample_rate": 20000,
+    "n_src": 1,
+    "segment": 0.3,
+    "learning_rate": 1e-3,
+    "max_epochs": 30,
+    "model_save_dir": r"C:\Users\june\Workspace\Asteroid\checkpoint",
+    "example_wav_path": r"C:\Users\june\Workspace\Asteroid\code\example.wav",
+}
+
 
 class Sanya(Dataset):
     """Dataset class for LibriMix source separation tasks.
@@ -45,9 +61,16 @@ class Sanya(Dataset):
     """
 
     dataset_name = "Sanya"
+    csv_dir = ""
 
     def __init__(
-            self, csv_dir, task="sep_clean", sample_rate=20000, n_src=1, segment=0.3, return_id=False
+        self,
+        csv_dir,
+        task="enh_both",
+        sample_rate=20000,
+        n_src=2,
+        segment=0.3,
+        return_id=False,
     ):
         self.csv_dir = csv_dir
         self.task = task
@@ -57,10 +80,9 @@ class Sanya(Dataset):
             md_file = [f for f in os.listdir(csv_dir) if "single" in f][0]
             self.csv_path = os.path.join(self.csv_dir, md_file)
         elif task == "enh_both":
-            md_file = [f for f in os.listdir(csv_dir) if "both" in f][0]
-            self.csv_path = os.path.join(self.csv_dir, md_file)
-            md_clean_file = [f for f in os.listdir(csv_dir) if "clean" in f][0]
-            self.df_clean = pd.read_csv(os.path.join(csv_dir, md_clean_file))
+            self.csv_path = r"C:\Users\june\Workspace\Asteroid\data\metadata\train\mixture_train_mix_both.csv"
+            md_clean_file = r"C:\Users\june\Workspace\Asteroid\data\metadata\train\mixture_train_mix_clean.csv"
+            self.df_clean = pd.read_csv(md_clean_file)
         elif task == "sep_clean":
             md_file = [f for f in os.listdir(csv_dir) if "clean" in f][0]
             self.csv_path = os.path.join(self.csv_dir, md_file)
@@ -130,7 +152,6 @@ class Sanya(Dataset):
 
     @classmethod
     def loaders_from_mini(cls, batch_size=4, **kwargs):
-
         train_set, val_set = cls.mini_from_download(**kwargs)
         train_loader = DataLoader(train_set, batch_size=batch_size, drop_last=True)
         val_loader = DataLoader(val_set, batch_size=batch_size, drop_last=True)
@@ -138,28 +159,30 @@ class Sanya(Dataset):
 
     @classmethod
     def mini_from_download(cls, **kwargs):
-        # kwargs checks
-        assert "csv_dir" not in kwargs, "Cannot specify csv_dir when downloading."
-        assert kwargs.get("task", "sep_clean") in [
-            "sep_clean",
-            "sep_noisy",
-        ], "Only clean and noisy separation are supported in MiniLibriMix."
-        assert (
-                kwargs.get("sample_rate", 125000) == 125000
-        ), "Only 8kHz sample rate is supported in MiniLibriMix."
-
-        meta_path = "../metadata"
+        meta_path = cls.csv_dir
         # Create dataset instances
-        train_set = cls(os.path.join(meta_path, "train"), sample_rate=125000,segment=0.3, **kwargs)
-        val_set = cls(os.path.join(meta_path, "val"), sample_rate=125000,segment=0.3, **kwargs)
+        train_set = cls(
+            os.path.join(meta_path, "train"), sample_rate=125000, segment=0.3, **kwargs
+        )
+        val_set = cls(
+            os.path.join(meta_path, "val"), sample_rate=125000, segment=0.3, **kwargs
+        )
         return train_set, val_set
 
 
-train_loader, val_loader = Sanya.loaders_from_mini(task="enh_single", batch_size=2)
+SanyaEnhance = Sanya(
+    csv_dir=r"C:\Users\june\Workspace\Asteroid\data\metadata",
+    task="enh_both",
+    sample_rate=20000,
+    n_src=2,
+    segment=0.3,
+)
+train_loader, val_loader = SanyaEnhance.loaders_from_mini(task="enh_both", batch_size=2)
+# train_loader, val_loader = Sanya.loaders_from_mini(task="enh_both", batch_size=2)
 
 # Move model to the GPU
 model = DPRNNTasNet(n_src=1, sample_rate=20000).to(device)
-#model = asteroid.DPTNet(n_src=2, sample_rate=125000).to(device)
+# model = asteroid.DPTNet(n_src=2, sample_rate=125000).to(device)
 # PITLossWrapper works with any loss function.
 loss = PITLossWrapper(pairwise_neg_sisdr, pit_from="pw_mtx").to(device)
 
@@ -171,11 +194,21 @@ system = System(model, optimizer, loss, train_loader, val_loader)
 trainer = Trainer(max_epochs=30)  # Specify to use 1 GPU
 trainer.fit(system)
 
-#model_save_path = 'DPTN-bs8_epoch50_sr125000.pth'
-model_save_path = 'DPRNN-bs2_epoch30_sr125000.pth'
+# model_save_path = 'DPTN-bs8_epoch50_sr125000.pth'
+# Generate model name based on parameters
+model_name = f"DPTN-bs{train_loader.batch_size}_epoch{trainer.max_epochs}_sr{train_loader.dataset.sample_rate}.pth"
+
+# Create directory with current date
+current_date = datetime.now().strftime("%Y-%m-%d")
+model_dir = os.path.join(r"C:\Users\june\Workspace\Asteroid\checkpoint", current_date)
+os.makedirs(model_dir, exist_ok=True)
+
+# Full model save path
+model_save_path = os.path.join(model_dir, model_name)
 
 # Save the model state dict
 torch.save(system.model, model_save_path)
-model.separate("Data 1 Target1No 1Cycle No 1Group Depth500m_Data 2 Target2No 10Cycle No 6Group Depth1200m.wav", resample=True)
-model.separate("Data 1 Target1No 1Cycle No 2Group Depth700m_Data 2 Target2No 8Cycle No 20Group Depth500m.wav", resample=True)
-model.separate("Data 1 Target1No 1Cycle No 3Group Depth200m_Data 2 Target2No 4Cycle No 14Group Depth400m.wav", resample=True)
+model.separate(
+    r"C:\Users\june\Workspace\Asteroid\code\example.wav",
+    resample=True,
+)
