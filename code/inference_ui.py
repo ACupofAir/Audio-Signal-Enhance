@@ -85,7 +85,7 @@ class InferenceInterface(QWidget):
         # Add a line separator
 
         self.result_sisnr_widget = InfoShowWidget(
-            info_label="si-SNR", label_bg_color="#000000"
+            info_label="SI-SNR", label_bg_color="#000000"
         )
         self.result_time_widget = InfoShowWidget(
             info_label="耗时", label_bg_color="#000000"
@@ -166,7 +166,7 @@ class InferenceInterface(QWidget):
         self.model.separate(
             audio_input_path,
             output_dir=output_folder_path,
-            resample=False,
+            resample=True,
         )
         end_time = time.time()
         delta_time = end_time - start_time
