@@ -21,21 +21,15 @@ import asteroid.models.dptnet
 from asteroid.losses import pairwise_neg_sisdr, PITLossWrapper
 from datetime import datetime
 
-# Check if a GPU is available
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 # Configuration parameters
-config = {
-    "task": "enh_single",
-    "batch_size": 2,
-    "sample_rate": 20000,
-    "n_src": 1,
-    "segment": 0.3,
-    "learning_rate": 1e-3,
-    "max_epochs": 30,
-    "model_save_dir": r"C:\Users\june\Workspace\Asteroid\checkpoint",
-    "example_wav_path": r"C:\Users\june\Workspace\Asteroid\code\example.wav",
-}
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+n_src = 1
+batchsize = 8
+epoch = 10
+
+print('======================DEBUG START: device======================')
+print(device)
+print('======================DEBUG  END : device======================')
 
 
 class Sanya(Dataset):
@@ -67,9 +61,9 @@ class Sanya(Dataset):
         self,
         csv_dir,
         task="enh_both",
-        sample_rate=20000,
-        n_src=2,
-        segment=0.3,
+        sample_rate=22050,
+        n_src=n_src,
+        segment=2.5,
         return_id=False,
     ):
         self.csv_dir = csv_dir
@@ -80,8 +74,8 @@ class Sanya(Dataset):
             md_file = [f for f in os.listdir(csv_dir) if "single" in f][0]
             self.csv_path = os.path.join(self.csv_dir, md_file)
         elif task == "enh_both":
-            self.csv_path = r"C:\Users\june\Workspace\Asteroid\data\metadata\train\mixture_train_mix_both.csv"
-            md_clean_file = r"C:\Users\june\Workspace\Asteroid\data\metadata\train\mixture_train_mix_clean.csv"
+            self.csv_path = r"C:\Users\ASUS\junwang\Asteroid\data\metadata\train\mixture_train_mix_both.csv"
+            md_clean_file = r"C:\Users\ASUS\junwang\Asteroid\data\metadata\train\mixture_train_mix_clean.csv"
             self.df_clean = pd.read_csv(md_clean_file)
         elif task == "sep_clean":
             md_file = [f for f in os.listdir(csv_dir) if "clean" in f][0]
@@ -162,26 +156,26 @@ class Sanya(Dataset):
         meta_path = cls.csv_dir
         # Create dataset instances
         train_set = cls(
-            os.path.join(meta_path, "train"), sample_rate=125000, segment=0.3, **kwargs
+            os.path.join(meta_path, "train"), sample_rate=22050, segment=2.5, **kwargs
         )
         val_set = cls(
-            os.path.join(meta_path, "val"), sample_rate=125000, segment=0.3, **kwargs
+            os.path.join(meta_path, "val"), sample_rate=22050, segment=2.5, **kwargs
         )
         return train_set, val_set
 
 
 SanyaEnhance = Sanya(
-    csv_dir=r"C:\Users\june\Workspace\Asteroid\data\metadata",
+    csv_dir=r"C:\Users\ASUS\junwang\Asteroid\data\metadata",
     task="enh_both",
-    sample_rate=20000,
-    n_src=2,
-    segment=0.3,
+    sample_rate=22050,
+    n_src=n_src,
+    segment=2.5,
 )
-train_loader, val_loader = SanyaEnhance.loaders_from_mini(task="enh_both", batch_size=2)
+train_loader, val_loader = SanyaEnhance.loaders_from_mini(task="enh_both", batch_size=batchsize)
 # train_loader, val_loader = Sanya.loaders_from_mini(task="enh_both", batch_size=2)
 
 # Move model to the GPU
-model = DPRNNTasNet(n_src=1, sample_rate=20000).to(device)
+model = DPRNNTasNet(n_src=n_src, sample_rate=22050).to(device)
 # model = asteroid.DPTNet(n_src=2, sample_rate=125000).to(device)
 # PITLossWrapper works with any loss function.
 loss = PITLossWrapper(pairwise_neg_sisdr, pit_from="pw_mtx").to(device)
@@ -191,7 +185,7 @@ optimizer = optim.Adam(model.parameters(), lr=1e-3)
 system = System(model, optimizer, loss, train_loader, val_loader)
 
 # trainer = Trainer(max_epochs=1, gpus=1)
-trainer = Trainer(max_epochs=30)  # Specify to use 1 GPU
+trainer = Trainer(max_epochs=epoch, gpus=1)  # Specify to use 1 GPU
 trainer.fit(system)
 
 # model_save_path = 'DPTN-bs8_epoch50_sr125000.pth'
@@ -200,7 +194,7 @@ model_name = f"DPTN-bs{train_loader.batch_size}_epoch{trainer.max_epochs}_sr{tra
 
 # Create directory with current date
 current_date = datetime.now().strftime("%Y-%m-%d")
-model_dir = os.path.join(r"C:\Users\june\Workspace\Asteroid\checkpoint", current_date)
+model_dir = os.path.join(r"C:\Users\ASUS\junwang\Asteroid\checkpoint", current_date)
 os.makedirs(model_dir, exist_ok=True)
 
 # Full model save path
@@ -208,7 +202,4 @@ model_save_path = os.path.join(model_dir, model_name)
 
 # Save the model state dict
 torch.save(system.model, model_save_path)
-model.separate(
-    r"C:\Users\june\Workspace\Asteroid\code\example.wav",
-    resample=True,
-)
+print('======================Train  END : model saved======================')

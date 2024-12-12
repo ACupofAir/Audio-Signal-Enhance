@@ -43,7 +43,7 @@ class InferenceInterface(QWidget):
 
         # First Module: Input Parameters
         self.ckp_selector = FileSelector(
-            default_file=r"C:\Users\june\Workspace\Asteroid\checkpoint\DPRNN-bs2_epoch30_sr125000.pth",
+            default_file=r"C:\Users\ASUS\junwang\Asteroid\checkpoint\DPRNN-bs2_epoch30_sr125000.pth",
             selector_text="未选择模型文件:",
             btn_text="选择",
             filetype="PyTorch Model Files (*.pth)",
@@ -65,7 +65,7 @@ class InferenceInterface(QWidget):
 
         self.output_folder_selector = FolderSelector(
             selector_text="未选择输出文件夹:",
-            default_folder=r"C:\Users\june\Workspace\Asteroid\code\output",
+            default_folder=r"C:\Users\ASUS\junwang\Asteroid\code\output",
             btn_text="选择",
         )
 
@@ -85,7 +85,7 @@ class InferenceInterface(QWidget):
         # Add a line separator
 
         self.result_sisnr_widget = InfoShowWidget(
-            info_label="SI-SNR", label_bg_color="#000000"
+            info_label="SI-SNRi", label_bg_color="#000000"
         )
         self.result_time_widget = InfoShowWidget(
             info_label="耗时", label_bg_color="#000000"
@@ -188,7 +188,7 @@ class InferenceInterface(QWidget):
             self.device
         )
         loss = loss_func(audio_output, audio_input)
-        # show si-snr
+        # show si-snri
         self.result_sisnr_widget.setText(f"{-1* loss.item():.2f} dB")
         # show time cost
         self.result_time_widget.setText(f"{delta_time*1000:.2f} ms")
@@ -198,7 +198,7 @@ class InferenceInterface(QWidget):
 
 
 if __name__ == "__main__":
-    os.chdir(r"C:\Users\june\Workspace\Asteroid\code")
+    os.chdir(r"C:\Users\ASUS\junwang\Asteroid\code")
     app = QApplication(sys.argv)
     main_window = InferenceInterface()
     main_window.show()

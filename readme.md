@@ -32,7 +32,7 @@ generate_label.py用于生成metadata中的标签
 1. 制作数据集`data_82.py`: 首先需要把数据转为等长的wav信号，分入train和val的s1和s2中；假设总共1000条，则train/s1和train/s2中各400条，val/s1和val/s2各100条；
 2. 噪音生成`generate_noise.py`: 用于生成noise下的高斯噪声，采样率和长度与信号相同；数量和s1/s2中数量相同，即train/noise中400条，val/noise中100条；
 3. 纯净混合信号生成`mixture_clean.py`: 用于生成mix_clean下的数据（可能要根据实际的数据情况稍作修改）
-4. 所有混合信号生成`mixture_both.py`: 用于和mix_both下的数据 （可能要根据实际的数据情况稍作修改）
+4. 所有混合信号生成`mixture_both.py`: copy mix_clean
 5. 生成数据标签`generate_label.py`: 用于在metadata下生成标签，把生成的csv分别放入metadata的train和val （可能要根据实际的数据情况稍作修改）
 
 ### 训练

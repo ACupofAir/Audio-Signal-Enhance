@@ -3,11 +3,11 @@ import shutil
 import random
 
 # 源文件夹
-source_folder = "C:/Users/admin/Desktop/Cola_Software_Build_merge/Asteroid/Sanya/object1&2_cut"
+source_folder = r"C:\Users\ASUS\Dataset\ShipsEar_audio\audio-5\Cargo"
 
 # 目标文件夹
-train_folder = "C:/Users/admin/Desktop/Cola_Software_Build_merge/Asteroid/Sanya/train"
-val_folder = "C:/Users/admin/Desktop/Cola_Software_Build_merge/Asteroid/Sanya/val"
+train_folder = r"C:\Users\ASUS\junwang\Asteroid\data\train"
+val_folder = r"C:\Users\ASUS\junwang\Asteroid\data\val"
 
 # 创建目标文件夹
 for category in ["s1", "s2"]:
@@ -15,12 +15,18 @@ for category in ["s1", "s2"]:
     os.makedirs(os.path.join(val_folder, category), exist_ok=True)
 
 # 指定关键字
-target1_keyword = "目标1"
-target2_keyword = "目标2"
+target1_keyword = "target1"
+target2_keyword = "target2"
 
 # 获取源文件夹中符合条件的文件列表
-target1_files = [f for f in os.listdir(source_folder) if target1_keyword in f]
-target2_files = [f for f in os.listdir(source_folder) if target2_keyword in f]
+source_files = os.listdir(source_folder)
+target1_files = [f for f in source_files if int(f.split('.')[0]) < len(source_files)//2]
+target2_files = [f for f in source_files if int(f.split('.')[0]) >= len(source_files)//2]
+print('======================DEBUG START: file len======================')
+print(len(target1_files))
+print(len(target2_files))
+print('======================DEBUG  END : file len======================')
+
 
 # 定义划分比例
 split_ratio = 0.8

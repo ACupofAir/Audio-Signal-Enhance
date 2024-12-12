@@ -3,13 +3,14 @@ import random
 import soundfile as sf
 
 # Input and output folder paths
-# input_folder_s1 = "C:/Users/admin/Desktop/Cola_Software_Build_merge/Asteroid/Sanya/train/s1"
-# input_folder_s2 = "C:/Users/admin/Desktop/Cola_Software_Build_merge/Asteroid/Sanya/train/s2"
-# output_folder = "C:/Users/admin/Desktop/Cola_Software_Build_merge/Asteroid/Sanya/train/mix_clean"
+# input_folder_s1 = r"C:\Users\ASUS\junwang\Asteroid\data\train\s1"
+# input_folder_s2 = r"C:\Users\ASUS\junwang\Asteroid\data\train\s2"
+# output_folder = r"C:\Users\ASUS\junwang\Asteroid\data\train\mix_clean"
+input_folder_s1 = r"C:\Users\ASUS\junwang\Asteroid\data\val\s1"
+input_folder_s2 = r"C:\Users\ASUS\junwang\Asteroid\data\val\s2"
+output_folder = r"C:\Users\ASUS\junwang\Asteroid\data\val\mix_clean"
 
-input_folder_s1 = "C:/Users/admin/Desktop/Cola_Software_Build_merge/Asteroid/Sanya/val/s1"
-input_folder_s2 = "C:/Users/admin/Desktop/Cola_Software_Build_merge/Asteroid/Sanya/val/s2"
-output_folder = "C:/Users/admin/Desktop/Cola_Software_Build_merge/Asteroid/Sanya/val/mix_clean"
+
 
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
@@ -20,7 +21,11 @@ s2_files = os.listdir(input_folder_s2)
 if len(s1_files) != len(s2_files):
     raise ValueError("s1 and s2 folders contain a different number of audio files")
 
-num_mixes = 1
+num_mixes = len(s1_files)
+print('======================DEBUG START: num_mixes======================')
+print(len(s1_files))
+print('======================DEBUG  END : num_mixes======================')
+
 for _ in range(num_mixes):
     file1 = random.choice(s1_files)
     file2 = random.choice(s2_files)

@@ -4,8 +4,9 @@ import random
 import soundfile as sf
 
 # 设置数据集目录和标签文件目录
-data_dir = r"C:\Users\june\Workspace\Asteroid\data"
-output_dir = r"C:\Users\june\Workspace\Asteroid\data\metadata"
+data_dir = r"C:\Users\ASUS\junwang\Asteroid\data"
+output_dir = r"C:\Users\ASUS\junwang\Asteroid\data\metadata"
+os.makedirs(output_dir)
 
 train_mix_both_dir = os.path.join(data_dir, "train", "mix_both")
 train_s1_dir = os.path.join(data_dir, "train", "mix_both")
@@ -81,9 +82,9 @@ for filename in os.listdir(train_mix_both_dir):
         s1, s2 = filename.split("_")
         s2 = s2.replace(".wav", "")
         mixture_path = os.path.join(train_mix_both_dir, filename)
-        s2_path = os.path.join("D:\\Codes\\Asteroid\\Sanya\\train\\s2", s2 + ".wav")
+        s2_path = os.path.join("C:\\Users\\ASUS\\junwang\\Asteroid\\data\\train\\s2", s2 + ".wav")
         s1 = s1.replace(".wav", "")
-        s1_path = os.path.join("D:\\Codes\\Asteroid\\Sanya\\train\\s1", s1 + ".wav")
+        s1_path = os.path.join("C:\\Users\\ASUS\\junwang\\Asteroid\\data\\train\\s1", s1 + ".wav")
         noise_file = random.choice(os.listdir(train_noise_dir))
         noise_path = os.path.join(train_noise_dir, noise_file)
         length = len(sf.read(mixture_path)[0])
@@ -112,9 +113,9 @@ for filename in os.listdir(val_mix_both_dir):
         s1, s2 = filename.split("_")
         s2 = s2.replace(".wav", "")
         mixture_path = os.path.join(val_mix_both_dir, filename)
-        s2_path = os.path.join("D:\\Codes\\Asteroid\\Sanya\\val\\s2", s2 + ".wav")
+        s2_path = os.path.join("C:\\Users\\ASUS\\junwang\\Asteroid\\data\\val\\s2", s2 + ".wav")
         s1 = s1.replace(".wav", "")
-        s1_path = os.path.join("D:\\Codes\\Asteroid\\Sanya\\val\\s1", s1 + ".wav")
+        s1_path = os.path.join("C:\\Users\\ASUS\\junwang\\Asteroid\\data\\val\\s1", s1 + ".wav")
         noise_file = random.choice(os.listdir(val_noise_dir))
         noise_path = os.path.join(val_noise_dir, noise_file)
         length = len(sf.read(mixture_path)[0])
