@@ -1,5 +1,10 @@
+# python check_sr.py <audio_file>
 import wave
-audio_file = r"C:\Users\ASUS\junwang\Asteroid\data\train\s1\3.wav"
-with wave.open(audio_file, 'rb') as wav_file:
+import sys
+
+audio_file = sys.argv[1]
+
+with wave.open(audio_file, "rb") as wav_file:
     sample_rate = wav_file.getframerate()
-    print(sample_rate)
+    print("Input file: ", audio_file)
+    print("Sample rate: ", sample_rate)
